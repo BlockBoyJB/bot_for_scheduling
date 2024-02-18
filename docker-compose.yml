@@ -1,0 +1,38 @@
+version: "4"
+
+services:
+  bot:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - docker.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:6.0.13-jammy
+    healthcheck:
+      test: [ "CMD","mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: on-failure
+    networks:
+      - app-network
+
+  redis:
+    image: redis
+    restart: on-failure
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
