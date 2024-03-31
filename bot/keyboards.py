@@ -1,33 +1,48 @@
-from aiogram.utils.keyboard import (
-    KeyboardButton,
-    ReplyKeyboardBuilder,
-    ReplyKeyboardMarkup,
-)
+from aiogram.types import InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 from bot.utils.templates import Buttons
 
 
-class SubjectKB:
+class ServiceKB:
     @classmethod
-    def cmd_subjects(cls, subjects: list[str]) -> ReplyKeyboardMarkup:
+    def yes_or_no(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text="Да")], [KeyboardButton(text="Нет")]]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+    @classmethod
+    def numbers(cls, k: int) -> ReplyKeyboardMarkup:
         builder = ReplyKeyboardBuilder()
-        for subject in subjects:
-            builder.add(KeyboardButton(text=subject))
-        builder.adjust(3)
+        for i in range(k):
+            builder.add(KeyboardButton(text=str(i + 1)))
+        builder.adjust(4)
         return builder.as_markup(resize_keyboard=True)
 
+
+class SectionKB:
     @classmethod
-    def subject_actions(cls) -> ReplyKeyboardMarkup:
-        keyboard = [[KeyboardButton(text=item) for item in Buttons.subject_actions]]
+    def cmd_sections(cls, sections: dict[str, str]) -> ReplyKeyboardMarkup:
+        """
+        sections: {section_uuid: section_name}
+        """
+        builder = InlineKeyboardBuilder()
+        for sid, name in sections.items():
+            builder.add(
+                InlineKeyboardButton(
+                    text=name,
+                    callback_data=sid,
+                )
+            )
+        builder.adjust(4)
+        return builder.as_markup()  # TODO resize keyboard???
+
+    @classmethod
+    def section_actions(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text=item) for item in Buttons.section_actions]]
         return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
-    @classmethod
-    def without_description(cls) -> ReplyKeyboardMarkup:
-        keyboard = [[KeyboardButton(text="Без описания")]]
-        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
-
-class HometaskKB:
+class TaskKB:
     @classmethod
     def create_task(cls) -> ReplyKeyboardMarkup:
         keyboard = [[KeyboardButton(text="Создать новую задачу")]]
@@ -38,35 +53,50 @@ class HometaskKB:
         builder = ReplyKeyboardBuilder()
         for item in Buttons.enter_deadline:
             builder.add(KeyboardButton(text=item))
-        builder.adjust(3)
+
+        builder.adjust(4)
         return builder.as_markup(resize_keyboard=True)
 
     @classmethod
-    def hometask_action(
-        cls, notifications: bool = False, deadline: bool = False
+    def enter_description(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text="Без описания")]]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+    @classmethod
+    def task_actions(
+        cls, has_notifications=False, has_deadline=False
     ) -> ReplyKeyboardMarkup:
         builder = ReplyKeyboardBuilder()
-        for item in Buttons.hometask_action:
+        for item in Buttons.task_actions:
             builder.add(KeyboardButton(text=item))
-        if notifications:
+        if has_notifications:
             builder.add(KeyboardButton(text="Редактировать напоминания"))
-        if deadline:
+        if has_deadline:
             builder.add(KeyboardButton(text="Добавить напоминание"))
         builder.adjust(3)
         return builder.as_markup(resize_keyboard=True)
 
+    @classmethod
+    def update_notifications_actions(cls) -> ReplyKeyboardMarkup:
+        keyboard = [
+            [KeyboardButton(text=item) for item in Buttons.update_notifications_actions]
+        ]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
 
 class NotificationKB:
     @classmethod
-    def choose_time(cls, has_notifications: bool = False) -> ReplyKeyboardMarkup:
-        buidler = ReplyKeyboardBuilder()
-        for item in Buttons.set_notification:
-            buidler.add(KeyboardButton(text=item))
-        if has_notifications:
-            buidler.add(KeyboardButton(text="Сохранить все значения"))
-            buidler.add(KeyboardButton(text="Удалить все напоминания"))
-        buidler.adjust(3)
-        return buidler.as_markup(resize_keyboard=True)
+    def choose_time(cls) -> ReplyKeyboardMarkup:
+        builder = ReplyKeyboardBuilder()
+        for item in Buttons.add_notification:
+            builder.add(KeyboardButton(text=item))
+        builder.adjust(4)
+        return builder.as_markup(resize_keyboard=True)
+
+    @classmethod
+    def add_message(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text="Без сообщения")]]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
     @classmethod
     def notification_actions(cls) -> ReplyKeyboardMarkup:
@@ -76,27 +106,10 @@ class NotificationKB:
         return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
     @classmethod
-    def new_notification_time(cls) -> ReplyKeyboardMarkup:
-        keyboard = [
-            [
-                KeyboardButton(text=item)
-                for item in Buttons.set_notification
-                if item != "Свое время"
-            ]
-        ]
-        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
-
-
-class ServiceKB:
-    @classmethod
-    def numbers(cls, count: int) -> ReplyKeyboardMarkup:
+    def edit_notification(cls) -> ReplyKeyboardMarkup:
         builder = ReplyKeyboardBuilder()
-        for i in range(count):
-            builder.add(KeyboardButton(text=str(i + 1)))
-        builder.adjust(4)
+        for item in Buttons.add_notification:
+            if item != "Свое время":
+                builder.add(KeyboardButton(text=item))
+        builder.adjust(3)
         return builder.as_markup(resize_keyboard=True)
-
-    @classmethod
-    def yes_or_no(cls) -> ReplyKeyboardMarkup:
-        keyboard = [[KeyboardButton(text="Да")], [KeyboardButton(text="Нет")]]
-        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)

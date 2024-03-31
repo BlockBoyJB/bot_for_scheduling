@@ -1,11 +1,11 @@
-from .hometask_service import HometaskService
-from .notification_service import NotificationService
-from .subject_service import SubjectService
-from .user_service import UserService
+from .user import UserService
+from .section import SectionService
+from .task import TaskService
+from .notification import NotificationService
 
 __all__ = [
-    "HometaskService",
-    "NotificationService",
-    "SubjectService",
     "UserService",
+    "SectionService",
+    "TaskService",
+    "NotificationService",
 ]

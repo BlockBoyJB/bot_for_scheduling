@@ -8,7 +8,7 @@ from redis.asyncio import Redis
 from redis.typing import ExpiryT
 
 
-class DateTimeAwareJSONEncoder(JSONEncoder):
+class _DateTimeAwareJSONEncoder(JSONEncoder):
     """
     Converts a python object, where datetime and timedelta objects are converted
     into objects that can be decoded using the DateTimeAwareJSONDecoder.
@@ -39,7 +39,7 @@ class DateTimeAwareJSONEncoder(JSONEncoder):
             return JSONEncoder.default(self, obj)
 
 
-class DateTimeAwareJSONDecoder(JSONDecoder):
+class _DateTimeAwareJSONDecoder(JSONDecoder):
     """
     Converts a json string, where datetime and timedelta objects were converted
     into objects using the DateTimeAwareJSONEncoder, back into a python object.
@@ -64,12 +64,6 @@ class DateTimeAwareJSONDecoder(JSONDecoder):
 
 
 class CustomRedisStorage(RedisStorage):
-    """
-    Переписал дефолтное редис хранилище, тк с datetime и timedelta имеются проблемы
-    (json не переваривает их). Поэтому чуток кастомизировал под свои требования
-    Требует небольшой оптимизации, тк на мой взгляд два if get() выглядят костыльно
-    """
-
     def __init__(
         self,
         redis: Redis,
@@ -82,21 +76,17 @@ class CustomRedisStorage(RedisStorage):
         super().__init__(
             redis, key_builder, state_ttl, data_ttl, json_loads, json_dumps
         )
-        self.encode = DateTimeAwareJSONEncoder().encode
-        self.decode = DateTimeAwareJSONDecoder().decode
+        self.encode = _DateTimeAwareJSONEncoder().encode
+        self.decode = _DateTimeAwareJSONDecoder().decode
 
     async def set_data(self, key: StorageKey, data: Dict[str, Any]) -> None:
         redis_key = self.key_builder.build(key, "data")
         if not data:
             await self.redis.delete(redis_key)
             return
-        if data.get("deadline"):
-            data["deadline"] = self.encode(data["deadline"])
-        if data.get("old_deadline"):
-            data["old_deadline"] = self.encode(data["old_deadline"])
         await self.redis.set(
             redis_key,
-            self.json_dumps(data),
+            self.encode(data),
             ex=self.data_ttl,
         )
 
@@ -107,9 +97,4 @@ class CustomRedisStorage(RedisStorage):
             return {}
         if isinstance(value, bytes):
             value = value.decode("utf-8")
-        data: dict = self.json_loads(value)
-        if data.get("deadline"):
-            data["deadline"] = self.decode(data["deadline"])
-        if data.get("old_deadline"):
-            data["old_deadline"] = self.decode(data["old_deadline"])
-        return cast(Dict[str, Any], data)
+        return cast(Dict[str, Any], self.decode(value))

@@ -1,42 +1,53 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class CreateSubject(StatesGroup):
+class CreateSection(StatesGroup):
     choose_name = State()
 
 
-class ChooseSubject(StatesGroup):
-    choose_subject = State()
+class ChooseSection(StatesGroup):
+    choose_section = State()
     choose_action = State()
 
 
-class CreateHometask(StatesGroup):
+class UpdateSection(StatesGroup):
+    edit_name = State()
+    delete_section = State()
+
+
+class CreateTask(StatesGroup):
     enter_title = State()
     enter_deadline = State()
-    set_custom_deadline = State()
+
+    enter_custom_deadline = State()
     enter_description = State()
-    add_notification = State()
-    set_time = State()
-    set_custom_time = State()
 
 
-class ChooseHometask(StatesGroup):
-    choose_hometask = State()
+class ChooseTask(StatesGroup):
+    choose_task = State()
     choose_action = State()
 
+
+class UpdateTask(StatesGroup):
     edit_title = State()
     edit_description = State()
     edit_deadline = State()
     delete_task = State()
 
 
-class HometaskNotification(StatesGroup):
+class CreateNotification(StatesGroup):
+    add_notification = State()
+    add_time_notification = State()
+    add_custom_time_notification = State()
+
+    add_message = State()
+
+
+class UpdateNotification(StatesGroup):
     update_notifications = State()
-    choose_update_action = State()
-    new_notification_time = State()
-    edit_notification = State()
 
+    edit_notifications = State()
+    choose_action = State()
 
-class EditSubject(StatesGroup):
-    edit_name = State()
-    delete_subject = State()
+    edit_time_notification = State()
+    delete_notification = State()
