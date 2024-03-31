@@ -1,11 +1,19 @@
-from .default_commands import router as cmd_router
-from .hometasks import router as hometask_router
-from .notifications import router as notification_router
-from .subjects import router as subject_router
+from aiogram import Router
+
+from .cmd import router as cmd_router
+from .section import router as section_router
+from .task import router as task_router
+from .notification import router as notification_router
+
+
+def get_routers() -> list[Router]:
+    return [cmd_router, section_router, task_router, notification_router]
+
 
 __all__ = [
     "cmd_router",
-    "hometask_router",
+    "section_router",
+    "task_router",
     "notification_router",
-    "subject_router",
+    "get_routers",
 ]

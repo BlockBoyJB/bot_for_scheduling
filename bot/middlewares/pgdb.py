@@ -3,11 +3,13 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
+from bot.db import UnitOfWork
 
-class MongoDBMiddleware(BaseMiddleware):
-    def __init__(self, mongo):
+
+class DatabaseMiddleware(BaseMiddleware):
+    def __init__(self):
         super().__init__()
-        self.mongo = mongo
+        self.uow = UnitOfWork()
 
     async def __call__(
         self,
@@ -15,5 +17,5 @@ class MongoDBMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: Dict[str, Any],
     ):
-        data["mongo"] = self.mongo()
+        data["uow"] = self.uow
         await handler(event, data)

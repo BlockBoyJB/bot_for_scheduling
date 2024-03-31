@@ -2,37 +2,45 @@ version: "4"
 
 services:
   bot:
+    container_name: bot
     build: .
     ports:
       - "5000:5000"
     env_file:
       - docker.env
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_started
+    restart: always
+    command: sh -c "alembic upgrade head && python -m bot"
     networks:
-      - app-network
+      - bot-network
 
-  mongo:
-    image: mongo:6.0.13-jammy
+  postgres:
+    image: postgres:15
     healthcheck:
-      test: [ "CMD","mongosh", "--eval", "db.adminCommand('ping')" ]
+      test: [ "CMD-SHELL", "pg_isready -d ${PG_DB} -U ${PG_USER}" ]
       interval: 5s
       timeout: 5s
-      retries: 3
-      start_period: 5s
-    restart: on-failure
+      retries: 5
+    environment:
+      POSTGRES_USER: $PG_USER
+      POSTGRES_PASSWORD: $PG_PASS
+      POSTGRES_DB: $PG_DB
+    restart: always
     networks:
-      - app-network
+      - bot-network
+
 
   redis:
     image: redis
-    restart: on-failure
+    restart: always
     networks:
-      - app-network
+      - bot-network
+
 
 networks:
-  app-network:
+  bot-network:
     driver: bridge

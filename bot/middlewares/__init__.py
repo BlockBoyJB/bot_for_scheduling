@@ -1,9 +1,9 @@
-from .bot import BotMiddleware
-from .mongodb import MongoDBMiddleware
+from .pgdb import DatabaseMiddleware
 from .scheduler import SchedulerMiddleware
+from .bot import BotMiddleware
 
 __all__ = [
-    "BotMiddleware",
-    "MongoDBMiddleware",
+    "DatabaseMiddleware",
     "SchedulerMiddleware",
+    "BotMiddleware",
 ]

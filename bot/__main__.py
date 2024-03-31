@@ -5,24 +5,16 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from bot.config import Settings
-from bot.database import MongoDb
-from bot.handlers import (
-    cmd_router,
-    hometask_router,
-    notification_router,
-    subject_router,
-)
-from bot.middlewares import BotMiddleware, MongoDBMiddleware, SchedulerMiddleware
-from bot.storage import CustomRedisStorage
-from bot.ui_commands import set_bot_commands
-from bot.utils.scheduler import load_tasks
+from bot.handlers import cmd_router, section_router, task_router, notification_router
+from bot.middlewares import DatabaseMiddleware, BotMiddleware, SchedulerMiddleware
+from bot.utils import load_tasks, set_bot_commands, CustomRedisStorage
 
 
 async def main():
     logging.basicConfig(level=logging.INFO)
 
     config = Settings()
-    bot = Bot(token=config.bot_token.get_secret_value(), parse_mode="HTML")
+    bot = Bot(token=config.bot_token.get_secret_value())
 
     if config.fsm_mode == "redis":
         storage = CustomRedisStorage.from_url(
@@ -42,14 +34,14 @@ async def main():
     dp = Dispatcher(storage=storage)
 
     # middlewares
-    dp.update.middleware(MongoDBMiddleware(mongo=MongoDb))
-    dp.update.middleware(SchedulerMiddleware(scheduler=scheduler))
-    dp.update.middleware(BotMiddleware(bot=bot))
+    dp.update.middleware(DatabaseMiddleware())
+    dp.message.middleware(BotMiddleware(bot=bot))
+    dp.message.middleware(SchedulerMiddleware(scheduler=scheduler))
 
     # routers. Предпочитаю каждый прописывать отдельно для наглядности
     dp.include_router(cmd_router)
-    dp.include_router(subject_router)
-    dp.include_router(hometask_router)
+    dp.include_router(section_router)
+    dp.include_router(task_router)
     dp.include_router(notification_router)
 
     await set_bot_commands(bot=bot)
