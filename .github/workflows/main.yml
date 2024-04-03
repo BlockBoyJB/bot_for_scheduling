@@ -51,5 +51,5 @@ jobs:
           key: ${{ secrets.SSHKEY }}
           script:
             cd ${{ secrets.WORKDIR }}
-            make remove-bot  # удаляем старый контейнер с прошлой версией
+            make remove-bot
             make run-bot
