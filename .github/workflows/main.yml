@@ -51,7 +51,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
 #          key: ${{ secrets.SSHKEY }}
-          script:
-            cd ${{ secrets.WORKDIR }}
-            make remove-bot
+          script: "
+            cd ${{ secrets.WORKDIR }} &
+            make remove-bot &
             make run-bot
+          "
