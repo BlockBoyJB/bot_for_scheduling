@@ -1,9 +1,11 @@
+# оставил композ только для локальной разработки.
+# В проде использую makefile с отдельными командами для более точной настройки
 version: "4"
 
 services:
   bot:
     container_name: bot
-    build: https://github.com/BlockBoyJB/bot_for_scheduling.git
+    build: .
     ports:
       - "5000:5000"
     env_file:
@@ -26,9 +28,9 @@ services:
       timeout: 5s
       retries: 5
     environment:
-      POSTGRES_USER: $PG_USER
-      POSTGRES_PASSWORD: $PG_PASS
-      POSTGRES_DB: $PG_DB
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_DB: ${PG_DB}
     restart: always
     networks:
       - bot-network
