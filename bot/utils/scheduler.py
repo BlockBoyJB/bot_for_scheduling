@@ -4,7 +4,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bot.db import NotificationRepo
 from bot.db.repository import NotificationRepository
 
-
 # async def load_tasks(scheduler: AsyncIOScheduler, bot: Bot):
 #     uow = UnitOfWork()
 #     async with uow:

@@ -1,8 +1,8 @@
-from sqlalchemy import insert, update, select, delete
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import User, Section, Task, Notification
-from .schemas import BaseModel, UserModel, SectionModel, TaskModel, NotificationModel
+from .models import Notification, Section, Task, User
+from .schemas import BaseModel, NotificationModel, SectionModel, TaskModel, UserModel
 
 
 class SQLAlchemyRepository:

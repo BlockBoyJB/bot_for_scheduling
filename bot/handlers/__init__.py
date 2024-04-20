@@ -1,9 +1,9 @@
 from aiogram import Router
 
 from .cmd import router as cmd_router
+from .notification import router as notification_router
 from .section import router as section_router
 from .task import router as task_router
-from .notification import router as notification_router
 
 
 def get_routers() -> list[Router]:

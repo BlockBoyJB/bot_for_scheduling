@@ -4,7 +4,7 @@ from uuid import uuid4
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from bot.db import UnitOfWork, NotificationModel
+from bot.db import NotificationModel, UnitOfWork
 from bot.utils import send_message
 
 

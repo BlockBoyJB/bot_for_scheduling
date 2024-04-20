@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from bot.db import UnitOfWork, SectionModel
+from bot.db import SectionModel, UnitOfWork
 
 
 class SectionService:
@@ -16,7 +16,9 @@ class SectionService:
             await uow.commit()
 
     @classmethod
-    async def find_all_sections(cls, user_id: int, uow: UnitOfWork) -> dict[str, str] | None:
+    async def find_all_sections(
+        cls, user_id: int, uow: UnitOfWork
+    ) -> dict[str, str] | None:
         """
         :return: dict[section_id: uuid, section: str]
         """

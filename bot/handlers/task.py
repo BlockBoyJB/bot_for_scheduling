@@ -2,17 +2,17 @@ from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 
-from bot.keyboards import TaskKB, ServiceKB, NotificationKB
-from bot.services import TaskService, NotificationService
-from bot.utils import TaskText, CmdText, NotificationText
+from bot.keyboards import NotificationKB, ServiceKB, TaskKB
+from bot.services import NotificationService, TaskService
 from bot.states import (
     ChooseSection,
-    CreateTask,
-    CreateNotification,
     ChooseTask,
-    UpdateTask,
+    CreateNotification,
+    CreateTask,
     UpdateNotification,
+    UpdateTask,
 )
+from bot.utils import CmdText, NotificationText, TaskText
 
 router = Router()
 

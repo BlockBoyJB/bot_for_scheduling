@@ -1,4 +1,4 @@
-from bot.db import TaskModel, NotificationModel
+from bot.db import NotificationModel, TaskModel
 
 
 class CmdText:
@@ -212,8 +212,12 @@ class NotificationText:
 
     choose_update_action = "Выберите действие с напоминанием:"
 
-    edit_time_notification = "Время для напоминания успешно обновлено\n" + CmdText.default
-    incorrect_time_notification = "Ой! Кажется, вы неправильно ввели время для напоминания!"
+    edit_time_notification = (
+        "Время для напоминания успешно обновлено\n" + CmdText.default
+    )
+    incorrect_time_notification = (
+        "Ой! Кажется, вы неправильно ввели время для напоминания!"
+    )
 
     delete_notification = "Напоминание успешно удалено!\n" + CmdText.default
     no_delete_notification = "Напоминание не было удалено!" + CmdText.default

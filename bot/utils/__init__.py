@@ -1,8 +1,7 @@
-from .templates import CmdText, SectionText, TaskText, NotificationText
-from .scheduler import send_message, load_tasks
-from .ui_commands import set_bot_commands
+from .scheduler import load_tasks, send_message
 from .storage import CustomRedisStorage
-
+from .templates import CmdText, NotificationText, SectionText, TaskText
+from .ui_commands import set_bot_commands
 
 __all__ = [
     "CmdText",

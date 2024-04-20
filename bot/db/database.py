@@ -1,10 +1,15 @@
 from abc import ABC, abstractmethod
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from bot.config import Settings
 
-from .repository import UserRepository, SectionRepository, TaskRepository, NotificationRepository
+from .repository import (
+    NotificationRepository,
+    SectionRepository,
+    TaskRepository,
+    UserRepository,
+)
 
 cfg = Settings()
 

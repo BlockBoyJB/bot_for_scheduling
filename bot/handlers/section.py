@@ -1,17 +1,17 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 
 from bot.keyboards import SectionKB, ServiceKB
-from bot.services import UserService, SectionService, TaskService
-from bot.utils import SectionText, TaskText
+from bot.services import SectionService, TaskService, UserService
 from bot.states import (
-    CreateSection,
     ChooseSection,
-    CreateTask,
     ChooseTask,
+    CreateSection,
+    CreateTask,
     UpdateSection,
 )
+from bot.utils import SectionText, TaskText
 
 router = Router()
 
@@ -101,9 +101,7 @@ async def confirm_delete_section(message: Message, state: FSMContext):
 async def delete_section(message: Message, state: FSMContext, uow):
     data = await state.get_data()
     if message.text.lower() == "да":
-        await SectionService.delete_section(
-            section_id=data["section_id"], uow=uow
-        )
+        await SectionService.delete_section(section_id=data["section_id"], uow=uow)
         text = SectionText.delete_section.format(section=data["section"])
     else:
         text = SectionText.no_delete_section

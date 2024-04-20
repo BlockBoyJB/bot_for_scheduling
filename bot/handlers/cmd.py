@@ -1,13 +1,13 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from sqlalchemy.exc import IntegrityError
 
 from bot.keyboards import SectionKB
-from bot.services import UserService, SectionService
+from bot.services import SectionService, UserService
+from bot.states import ChooseSection, CreateSection
 from bot.utils import CmdText, SectionText, TaskText
-from bot.states import CreateSection, ChooseSection
 
 router = Router()
 
@@ -55,7 +55,8 @@ async def cmd_sections(message: Message, state: FSMContext, uow):
         await state.set_state(ChooseSection.choose_section)
         await state.update_data(sections=sections)
         await message.answer(
-            text=SectionText.choose_section, reply_markup=SectionKB.cmd_sections(sections)
+            text=SectionText.choose_section,
+            reply_markup=SectionKB.cmd_sections(sections),
         )
     else:
         await message.answer(SectionText.no_sections)
@@ -67,4 +68,6 @@ async def cmd_tasks(message: Message, uow):
     if text:
         await message.answer(text=text, reply_markup=ReplyKeyboardRemove())
     else:
-        await message.answer(text=TaskText.no_one_task, reply_markup=ReplyKeyboardRemove())
+        await message.answer(
+            text=TaskText.no_one_task, reply_markup=ReplyKeyboardRemove()
+        )

@@ -1,10 +1,10 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 
-from bot.keyboards import NotificationKB, TaskKB, ServiceKB
+from bot.keyboards import NotificationKB, ServiceKB, TaskKB
 from bot.services import NotificationService, TaskService
-from bot.states import CreateNotification, ChooseSection, UpdateNotification
+from bot.states import ChooseSection, CreateNotification, UpdateNotification
 from bot.utils import NotificationText
 from bot.utils.templates import Buttons, CmdText
 

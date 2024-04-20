@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import mapped_column, Mapped, DeclarativeMeta, declarative_base
+from sqlalchemy.orm import DeclarativeMeta, Mapped, declarative_base, mapped_column
 from sqlalchemy.sql.functions import now
 
-from .schemas import UserModel, SectionModel, TaskModel, NotificationModel
-
+from .schemas import NotificationModel, SectionModel, TaskModel, UserModel
 
 Base: DeclarativeMeta = declarative_base()
 

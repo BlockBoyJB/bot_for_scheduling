@@ -1,10 +1,10 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 import datefinder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from bot.db import UnitOfWork, TaskModel, NotificationModel
+from bot.db import NotificationModel, TaskModel, UnitOfWork
 from bot.utils import TaskText
 
 
@@ -30,9 +30,7 @@ class TaskService:
         return task_id
 
     @classmethod
-    async def update_task_title(
-        cls, task_id: str, new_title: str, uow: UnitOfWork
-    ):
+    async def update_task_title(cls, task_id: str, new_title: str, uow: UnitOfWork):
         data = {"title": new_title}
         async with uow:
             await uow.task.update(data, task_id=task_id)
@@ -48,7 +46,9 @@ class TaskService:
             await uow.commit()
 
     @classmethod
-    async def update_task_deadline(cls, task_id: str, deadline: datetime, uow: UnitOfWork):
+    async def update_task_deadline(
+        cls, task_id: str, deadline: datetime, uow: UnitOfWork
+    ):
         async with uow:
             await uow.task.update({"deadline": deadline}, task_id=task_id)
             await uow.commit()
@@ -135,7 +135,9 @@ class TaskService:
         return None
 
     @classmethod
-    async def delete_task(cls, task_id: str, scheduler: AsyncIOScheduler, uow: UnitOfWork):
+    async def delete_task(
+        cls, task_id: str, scheduler: AsyncIOScheduler, uow: UnitOfWork
+    ):
         # с удалением задачи чуть посложнее, тк могут быть напоминания, которые нужно удалять из scheduler
         async with uow:
             notificaitons = await uow.notification.find_many(task_id=task_id)

@@ -34,7 +34,9 @@ class UserService:
                 text += f"Раздел: {section.section}\n\t"
                 tasks = await uow.task.find_many(section_id=section.section_id)
                 for task in tasks:
-                    notifications = await uow.notification.find_many(task_id=task.task_id)
+                    notifications = await uow.notification.find_many(
+                        task_id=task.task_id
+                    )
                     text += await TaskText.format_task(task, notifications) + "\n"
                 text += "\n"
         return None if len(text) == 0 else text
