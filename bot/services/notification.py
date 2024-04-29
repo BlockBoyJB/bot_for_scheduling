@@ -4,7 +4,7 @@ from uuid import uuid4
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from bot.db import NotificationModel, UnitOfWork
+from bot.db import NotificationModel, UnitOfWork, tz
 from bot.utils import send_message
 
 
@@ -40,7 +40,7 @@ class NotificationService:
             send_message,
             id=scheduler_id,
             trigger="date",
-            next_run_time=data["notification"],
+            next_run_time=data["notification"].astimezone(tz),
             args=[bot, user_id, scheduler_id],
         )
 
@@ -62,7 +62,7 @@ class NotificationService:
             )
             await uow.commit()
 
-        scheduler.modify_job(job_id=scheduler_id, next_run_time=new_time)
+        scheduler.modify_job(job_id=scheduler_id, next_run_time=new_time.astimezone(tz))
 
     @classmethod
     async def find_notifications(
@@ -96,7 +96,8 @@ class NotificationService:
                     scheduler_id=notification.scheduler_id,
                 )
                 scheduler.modify_job(
-                    job_id=notification.scheduler_id, next_run_time=new_notification
+                    job_id=notification.scheduler_id,
+                    next_run_time=new_notification.astimezone(tz),
                 )
             await uow.commit()
 

@@ -1,3 +1,5 @@
+from datetime import timedelta, timezone
+
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -34,7 +36,9 @@ async def load_tasks(scheduler: AsyncIOScheduler, bot: Bot):
             send_message,
             id=notification.scheduler_id,
             trigger="date",
-            next_run_time=notification.notification,
+            next_run_time=notification.notification.astimezone(
+                timezone(timedelta(hours=3))
+            ),
             args=[bot, notification.user_id, notification.scheduler_id],
         )
 

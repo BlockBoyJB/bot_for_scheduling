@@ -54,6 +54,7 @@ init-pg-network:
 init-pg-container:
 	docker run --name bot-postgres -d \
 			--restart always \
+			-p ${PG_PORT}:${PG_PORT} \
     		-e POSTGRES_USER=${PG_USER} \
     		-e POSTGRES_PASSWORD=${PG_PASS} \
     		-e POSTGRES_DB=${PG_DB} postgres:15

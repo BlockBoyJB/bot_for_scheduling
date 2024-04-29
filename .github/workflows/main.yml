@@ -41,7 +41,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
 #          key: ${{ secrets.SSHKEY }}
-          source: "Makefile"
+          source: Makefile
           target: ${{ secrets.WORKDIR }}
 
       - name: deploy via ssh
@@ -51,8 +51,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
 #          key: ${{ secrets.SSHKEY }}
-          script: "
-            cd ${{ secrets.WORKDIR }} &
-            make remove-bot &
+          script: |
+            cd ${{ secrets.WORKDIR }}  
+            make remove-bot  
             make run-bot
-          "

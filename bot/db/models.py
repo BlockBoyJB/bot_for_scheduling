@@ -1,12 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import DeclarativeMeta, Mapped, declarative_base, mapped_column
 from sqlalchemy.sql.functions import now
 
 from .schemas import NotificationModel, SectionModel, TaskModel, UserModel
 
 Base: DeclarativeMeta = declarative_base()
+
+
+tz = timezone(timedelta(hours=3))
 
 
 class User(Base):
@@ -58,7 +61,9 @@ class Task(Base):
     task_id: Mapped[str] = mapped_column(unique=True, nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=False)
-    deadline: Mapped[datetime | None] = mapped_column(nullable=True)
+    deadline: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     create_date: Mapped[datetime] = mapped_column(default=now())
 
     def to_read_model(self) -> TaskModel:
@@ -85,8 +90,10 @@ class Notification(Base):
     task_id: Mapped[str] = mapped_column(
         ForeignKey("task.task_id", ondelete="cascade"), nullable=False
     )
-    deadline: Mapped[datetime] = mapped_column(nullable=False)
-    notification: Mapped[datetime] = mapped_column(nullable=False)
+    deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    notification: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
     scheduler_id: Mapped[str] = mapped_column(unique=True, nullable=False)
     section: Mapped[str] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)

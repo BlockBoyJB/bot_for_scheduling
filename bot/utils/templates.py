@@ -1,4 +1,4 @@
-from bot.db import NotificationModel, TaskModel
+from bot.db import NotificationModel, TaskModel, tz
 
 
 class CmdText:
@@ -95,6 +95,7 @@ class TaskText:
 
     enter_deadline = (
         "Пожалуйста, укажите дедлайн (дату и время) задания\n"
+        "Время нужно указывать по московскому времени!\n"
         "Рекомендуется писать в обычном формате,\n"
         "Hапример 23 01 24, 12:00\n"
         "Либо нажмите любую из кнопок."
@@ -102,7 +103,8 @@ class TaskText:
     incorrect_deadline = (
         "Ой! Кажется вы ввели некорректный формат для времени!\n"
         "Пожалуйста, введите дедлайн в формате\n"
-        "ДАТА МЕСЯЦ ГОД, для точного времени (если необходимо): ЧАС:МИНУТА"
+        "ДАТА МЕСЯЦ ГОД, для точного времени (если необходимо): ЧАС:МИНУТА\n"
+        "Время указывать по московскому времени!"
     )
 
     enter_custom_deadline = "Введите свое значение для дедлайна\nОбязательно в минутах!"
@@ -157,32 +159,11 @@ class TaskText:
         """
         return cls.hometask.format(
             title=task.title,
-            deadline=task.deadline if task.deadline else "Без дедлайна",
+            deadline=task.deadline.astimezone(tz) if task.deadline else "Без дедлайна",
             description=task.description,
             notifications=await cls.format_notifications(notifications),
             create_date=task.create_date,
         )
-
-    @classmethod
-    async def format_all_tasks(cls, tasks: list[TaskModel]) -> tuple[int, str, dict]:
-        k = 0
-        text = ""
-        state_data = {}
-        for task in tasks:
-            k += 1
-            text += (
-                f"{k}. "
-                + cls.hometask.format(
-                    title=task.title,
-                    deadline=task.deadline if task.deadline else "Без дедлайна",
-                    description=task.description,
-                    notifications="",  # TODO notifications
-                    create_date=task.create_date,
-                )
-                + "\n\n"
-            )
-            state_data[str(k)] = task.task_id
-        return k, text, state_data
 
 
 class NotificationText:

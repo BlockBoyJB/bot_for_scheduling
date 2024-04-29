@@ -4,7 +4,7 @@ from uuid import uuid4
 import datefinder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from bot.db import NotificationModel, TaskModel, UnitOfWork
+from bot.db import NotificationModel, TaskModel, UnitOfWork, tz
 from bot.utils import TaskText
 
 
@@ -69,16 +69,6 @@ class TaskService:
                 return None
             return task, notifications
 
-    @classmethod
-    async def find_all_tasks(
-        cls, section_id: str, uow: UnitOfWork
-    ) -> tuple[int, str, dict[str, str]] | Exception:
-        async with uow:
-            tasks = await uow.task.find_many(section_id=section_id)
-        if tasks:
-            return await TaskText.format_all_tasks(tasks)
-        raise ValueError
-
     # Это конечно дичь редкостная, но таков путь
     @classmethod
     async def find_all_tasks_with_notifications(
@@ -105,7 +95,7 @@ class TaskService:
 
     @classmethod
     async def get_deadline(cls, text: str) -> datetime | Exception:
-        now = datetime.now().replace(microsecond=0, second=0)
+        now = datetime.now(tz).replace(microsecond=0, second=0)
         match text.lower():
             case "через 5 минут":
                 return now + timedelta(minutes=5)
@@ -127,7 +117,7 @@ class TaskService:
     async def get_custom_deadline(cls, time: str) -> datetime | None:
         for message in time.split():
             try:
-                return datetime.now().replace(microsecond=0, second=0) + timedelta(
+                return datetime.now(tz).replace(microsecond=0, second=0) + timedelta(
                     minutes=int(message)
                 )
             except ValueError:
