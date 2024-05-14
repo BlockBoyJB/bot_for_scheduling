@@ -6,9 +6,7 @@ from pydantic import BaseModel
 class UserModel(BaseModel):
     id: int
     user_id: int
-    username: str | None
-    first_name: str | None
-    last_name: str | None
+    timezone: str | None
     create_date: datetime
 
 
@@ -22,11 +20,13 @@ class SectionModel(BaseModel):
 
 class TaskModel(BaseModel):
     id: int
+    user_id: int
     section_id: str
     task_id: str
     title: str
     description: str
     deadline: datetime | None
+    timezone: str | None
     create_date: datetime
 
 

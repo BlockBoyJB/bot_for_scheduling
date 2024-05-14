@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import DeclarativeMeta, Mapped, declarative_base, mapped_column
@@ -9,25 +9,19 @@ from .schemas import NotificationModel, SectionModel, TaskModel, UserModel
 Base: DeclarativeMeta = declarative_base()
 
 
-tz = timezone(timedelta(hours=3))
-
-
 class User(Base):
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(nullable=False, unique=True)
-    username: Mapped[str | None] = mapped_column(nullable=True)
-    first_name: Mapped[str | None] = mapped_column(nullable=True)
-    last_name: Mapped[str | None] = mapped_column(nullable=True)
+    # убрал username, first_name, last_name, тк никаким образом не обновляем эти данные
+    timezone: Mapped[str] = mapped_column(nullable=True)
     create_date: Mapped[datetime] = mapped_column(default=now())
 
     def to_read_model(self) -> UserModel:
         return UserModel(
             id=self.id,
             user_id=self.user_id,
-            username=self.username,
-            first_name=self.first_name,
-            last_name=self.last_name,
+            timezone=self.timezone,
             create_date=self.create_date,
         )
 
@@ -55,6 +49,9 @@ class Section(Base):
 class Task(Base):
     __tablename__ = "task"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(  # решил добавить для большей гибкости работы
+        ForeignKey("user.user_id", ondelete="cascade"), nullable=False
+    )
     section_id: Mapped[str] = mapped_column(
         ForeignKey("section.section_id", ondelete="cascade"), nullable=False
     )
@@ -64,16 +61,19 @@ class Task(Base):
     deadline: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    timezone: Mapped[str] = mapped_column(nullable=True)
     create_date: Mapped[datetime] = mapped_column(default=now())
 
     def to_read_model(self) -> TaskModel:
         return TaskModel(
             id=self.id,
+            user_id=self.user_id,
             section_id=self.section_id,
             task_id=self.task_id,
             title=self.title,
             description=self.description,
             deadline=self.deadline,
+            timezone=self.timezone,
             create_date=self.create_date,
         )
 

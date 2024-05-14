@@ -89,6 +89,31 @@ async def create_new_task(message: Message, state: FSMContext):
     await message.answer(text=TaskText.enter_title, reply_markup=ReplyKeyboardRemove())
 
 
+@router.message(ChooseSection.choose_action, F.text.lower() == "удалить все задачи")
+async def confirm_delete_tasks(message: Message, state: FSMContext):
+    data = await state.get_data()
+    await state.set_state(UpdateSection.delete_tasks)
+    await message.answer(
+        text=SectionText.confirm_delete_tasks.format(section=data["section"]),
+        reply_markup=ServiceKB.yes_or_no(),
+    )
+
+
+@router.message(UpdateSection.delete_tasks)
+async def delete_tasks(message: Message, state: FSMContext, scheduler, uow):
+    data = await state.get_data()
+    if message.text.lower() == "да":
+        await TaskService.delete_section_tasks(
+            section_id=data["section_id"], scheduler=scheduler, uow=uow
+        )
+        text = SectionText.delete_tasks_section.format(section=data["section"])
+    else:
+        text = SectionText.no_delete_tasks_section
+
+    await message.answer(text=text, reply_markup=ReplyKeyboardRemove())
+    await state.clear()
+
+
 @router.message(ChooseSection.choose_action, F.text.lower() == "удалить раздел")
 async def confirm_delete_section(message: Message, state: FSMContext):
     await state.set_state(UpdateSection.delete_section)

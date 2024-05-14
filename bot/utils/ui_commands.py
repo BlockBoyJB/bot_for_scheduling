@@ -5,10 +5,12 @@ from aiogram.types import BotCommand
 async def set_bot_commands(bot: Bot):
     commands = [
         BotCommand(command="start", description="Перезапуск бота"),
+        BotCommand(command="new_task", description="Создать новую задачу"),
         BotCommand(command="new_section", description="Создать новый раздел"),
         BotCommand(command="sections", description="Перейти к разделам"),
         BotCommand(command="tasks", description="Посмотреть все задачи"),
         BotCommand(command="help", description="Помощь"),
         BotCommand(command="menu", description="Главное меню"),
+        BotCommand(command="settings", description="Настройки"),
     ]
     await bot.set_my_commands(commands=commands)

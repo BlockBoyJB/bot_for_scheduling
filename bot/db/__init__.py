@@ -4,10 +4,10 @@ from .repository import NotificationRepository
 
 __all__ = [
     "Base",
-    "User",
-    "Section",
-    "Task",
-    "Notification",
     "UnitOfWork",
     "NotificationRepo",
+    "UserModel",
+    "SectionModel",
+    "TaskModel",
+    "NotificationModel",
 ]

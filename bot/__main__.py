@@ -5,7 +5,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from bot.config import Settings
-from bot.handlers import cmd_router, notification_router, section_router, task_router
+from bot.handlers import (
+    cmd_router,
+    notification_router,
+    section_router,
+    task_router,
+    user_router,
+)
 from bot.middlewares import BotMiddleware, DatabaseMiddleware, SchedulerMiddleware
 from bot.utils import CustomRedisStorage, load_tasks, set_bot_commands
 
@@ -43,6 +49,7 @@ async def main():
     dp.include_router(section_router)
     dp.include_router(task_router)
     dp.include_router(notification_router)
+    dp.include_router(user_router)
 
     await set_bot_commands(bot=bot)
 

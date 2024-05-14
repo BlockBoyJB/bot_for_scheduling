@@ -18,6 +18,27 @@ class ServiceKB:
         builder.adjust(4)
         return builder.as_markup(resize_keyboard=True)
 
+    # TODO переделать все клавиатуры ниже с одной кнопкой под эту функцию
+    @classmethod
+    def one_button(cls, text: str) -> ReplyKeyboardMarkup:
+        return ReplyKeyboardMarkup(
+            keyboard=[[KeyboardButton(text=text)]], resize_keyboard=True
+        )
+
+
+class UserKB:
+    @classmethod
+    def settings(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text=item) for item in Buttons.settings]]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+    @classmethod
+    def edit_timezone(cls) -> ReplyKeyboardMarkup:
+        keyboard = [
+            [KeyboardButton(text=item) for item in Buttons.edit_timezone_actions]
+        ]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
 
 class SectionKB:
     @classmethod
@@ -38,8 +59,11 @@ class SectionKB:
 
     @classmethod
     def section_actions(cls) -> ReplyKeyboardMarkup:
-        keyboard = [[KeyboardButton(text=item) for item in Buttons.section_actions]]
-        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+        builder = ReplyKeyboardBuilder()
+        for item in Buttons.section_actions:
+            builder.add(KeyboardButton(text=item))
+        builder.adjust(3)
+        return builder.as_markup(resize_keyboard=True)
 
 
 class TaskKB:
@@ -81,6 +105,16 @@ class TaskKB:
         keyboard = [
             [KeyboardButton(text=item) for item in Buttons.update_notifications_actions]
         ]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+    @classmethod
+    def delete_all_tasks(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text="Удалить все задачи")]]
+        return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+    @classmethod
+    def delete_all_tasks_actions(cls) -> ReplyKeyboardMarkup:
+        keyboard = [[KeyboardButton(text=item) for item in Buttons.all_tasks_actions]]
         return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
 

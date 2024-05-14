@@ -1,10 +1,11 @@
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 
 from bot.keyboards import NotificationKB, ServiceKB, TaskKB
-from bot.services import NotificationService, TaskService
+from bot.services import NotificationService, SectionService, TaskService
 from bot.states import (
+    AllTasks,
     ChooseSection,
     ChooseTask,
     CreateNotification,
@@ -12,9 +13,19 @@ from bot.states import (
     UpdateNotification,
     UpdateTask,
 )
-from bot.utils import CmdText, NotificationText, TaskText
+from bot.utils import CmdText, NotificationText, TaskText, TimezoneService
 
 router = Router()
+
+
+@router.callback_query(CreateTask.choose_section)
+async def choose_section(callback: CallbackQuery, state: FSMContext):
+    section = (await state.get_data())["sections"][callback.data]
+    await state.clear()
+    await callback.answer()
+    await state.update_data(section_id=callback.data, section=section)
+    await state.set_state(CreateTask.enter_title)
+    await callback.message.answer(text=TaskText.enter_title)
 
 
 @router.message(CreateTask.enter_title)
@@ -78,13 +89,14 @@ async def enter_description(message: Message, state: FSMContext, uow):
     """
     data = await state.get_data()
     data["description"] = message.text
-    task_id = await TaskService.add_task(task=data, uow=uow)
+    task_id, tz = await TaskService.add_task(
+        user_id=message.from_user.id, task=data, uow=uow
+    )
     if data["deadline"] is None:
         data["deadline"] = "Без дедлайна"
-        section_id, section = data["section_id"], data["section"]
-        await state.clear()
-        await state.set_state(ChooseSection.choose_action)
-        await state.update_data(section_id=section_id, section=section)
+        await SectionService.save_section(
+            state=state, action=ChooseSection.choose_action, clear=True
+        )
         await message.answer(
             text=TaskText.create.format(
                 section=data["section"],
@@ -96,13 +108,13 @@ async def enter_description(message: Message, state: FSMContext, uow):
             reply_markup=TaskKB.create_task(),
         )
     else:
-        await state.update_data(task_id=task_id)
+        await state.update_data(task_id=task_id, tz=tz)
         await state.set_state(CreateNotification.add_notification)
         await message.answer(
             text=TaskText.create.format(
                 section=data["section"],
                 title=data["title"],
-                deadline=data["deadline"],
+                deadline=TimezoneService.convert_to_tz(data["deadline"], tz),
                 description=data["description"],
             )
             + NotificationText.ask_notification,
@@ -128,12 +140,12 @@ async def choose_task(message: Message, state: FSMContext, uow):
         if task_data is None:
             raise KeyError
         task, notifications = task_data[0], task_data[1]
-        text = await TaskText.format_task(task, notifications)
+        text = TaskText.format_task(task, notifications)
         text += "\n\nВыберите действия с задачей:"
-        section_id, section = data["section_id"], data["section"]
-        await state.clear()
-        await state.set_state(ChooseTask.choose_action)
-        await state.update_data(section_id=section_id, section=section, task_id=task_id)
+        await SectionService.save_section(
+            state=state, action=ChooseTask.choose_action, clear=True
+        )
+        await state.update_data(task_id=task_id)
         await message.answer(
             text=text,
             reply_markup=TaskKB.task_actions(
@@ -191,11 +203,24 @@ async def choose_action(message: Message, state: FSMContext, uow):
 
         case "добавить напоминание":
             # Возможно, стоило сделать отдельную ручку
-            action = CreateNotification.add_time_notification
-            text = "Укажите, за сколько нужно напомнить о задаче\n(Нажмите на одну из кнопок)"
             task = await TaskService.find_task(task_id=data["task_id"], uow=uow)
-            await state.update_data(deadline=task.deadline, title=task.title)
-            kb = NotificationKB.choose_time()
+            if TimezoneService.valid_date(task.deadline, task.timezone) is False:
+                action = ChooseTask.choose_action
+                deadline = TimezoneService.convert_to_tz(task.deadline, task.timezone)
+                text = (
+                    f"Ой! Кажется, дедлайн задачи уже прошел: {deadline}! Напоминание создать невозможно!\n"
+                    "Если хотите добавить напоминание к задаче, то сначала измените дедлайн и повторите действие!"
+                )
+                kb = TaskKB.task_actions(
+                    has_deadline=True
+                )  # TODO кнопка работы с напоминаниями будет пропадать
+            else:
+                action = CreateNotification.add_time_notification
+                text = "Укажите, за сколько нужно напомнить о задаче\n(Нажмите на одну из кнопок)"
+                await state.update_data(
+                    deadline=task.deadline, title=task.title, tz=task.timezone
+                )
+                kb = NotificationKB.choose_time()
 
     if action:
         await state.set_state(action)
@@ -256,7 +281,7 @@ async def edit_deadline(message: Message, state: FSMContext, uow):
             task_id=data["task_id"], uow=uow
         )
         if notifications:
-            text = await TaskText.format_notifications(notifications)
+            text = TaskText.format_notifications(notifications)
             await state.update_data(new_deadline=new_deadline)
             await state.set_state(UpdateNotification.update_notifications)
             await message.answer(
@@ -289,3 +314,34 @@ async def delete_task(message: Message, state: FSMContext, scheduler, uow):
         text = TaskText.no_delete_task
 
     await message.answer(text=text, reply_markup=ReplyKeyboardRemove())
+
+
+@router.message(AllTasks.delete_all_tasks)
+async def delete_all_tasks(message: Message, state: FSMContext):
+    await state.set_state(AllTasks.choose_delete_action)
+    await message.answer(
+        text=TaskText.delete_all_tasks, reply_markup=TaskKB.delete_all_tasks_actions()
+    )
+
+
+@router.message(AllTasks.choose_delete_action)
+async def choose_delete_action(message: Message, uow):
+    text = None
+    match message.text.lower():
+        case "отменить":
+            text = "Задачи не были удалены\n" + CmdText.default
+        case "сохранить разделы":
+            await TaskService.delete_all_tasks(user_id=message.from_user.id, uow=uow)
+            text = (
+                "Задачи успешно удалены. Все разделы были сохранены\n" + CmdText.default
+            )
+        case "удалить разделы":
+            await SectionService.delete_all_sections(
+                user_id=message.from_user.id, uow=uow
+            )
+            text = "Задачи вместе с разделами успешно удалены\n" + CmdText.default
+
+    if text:
+        await message.answer(text=text, reply_markup=ReplyKeyboardRemove())
+    else:
+        await message.answer(text=CmdText.incorrect_btn)
