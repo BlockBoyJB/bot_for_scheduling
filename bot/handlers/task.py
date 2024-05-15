@@ -325,13 +325,15 @@ async def delete_all_tasks(message: Message, state: FSMContext):
 
 
 @router.message(AllTasks.choose_delete_action)
-async def choose_delete_action(message: Message, uow):
+async def choose_delete_action(message: Message, scheduler, uow):
     text = None
     match message.text.lower():
         case "отменить":
             text = "Задачи не были удалены\n" + CmdText.default
         case "сохранить разделы":
-            await TaskService.delete_all_tasks(user_id=message.from_user.id, uow=uow)
+            await TaskService.delete_all_tasks(
+                user_id=message.from_user.id, scheduler=scheduler, uow=uow
+            )
             text = (
                 "Задачи успешно удалены. Все разделы были сохранены\n" + CmdText.default
             )

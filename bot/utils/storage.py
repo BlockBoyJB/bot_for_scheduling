@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from json import JSONDecoder, JSONEncoder, dumps, loads
 from typing import Any, Dict, Optional, cast
 
@@ -16,7 +16,7 @@ class _DateTimeAwareJSONEncoder(JSONEncoder):
 
     def default(self, obj):
         if isinstance(obj, datetime):
-            return {
+            r = {
                 "__type__": "datetime",
                 "year": obj.year,
                 "month": obj.month,
@@ -26,6 +26,15 @@ class _DateTimeAwareJSONEncoder(JSONEncoder):
                 "second": obj.second,
                 "microsecond": obj.microsecond,
             }
+            tz = obj.utcoffset()
+            if tz is not None:
+                r["__type__"] = "datetime_tz"
+                r["tzinfo"] = {
+                    "days": tz.days,
+                    "seconds": tz.seconds,
+                    "microseconds": tz.microseconds,
+                }
+            return r
 
         elif isinstance(obj, timedelta):
             return {
@@ -58,6 +67,9 @@ class _DateTimeAwareJSONDecoder(JSONDecoder):
             return datetime(**d)
         elif type == "timedelta":
             return timedelta(**d)
+        elif type == "datetime_tz":
+            tz = d.pop("tzinfo")
+            return datetime(**d, tzinfo=timezone(timedelta(**tz)))
         else:
             d["__type__"] = type
             return d
